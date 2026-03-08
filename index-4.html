@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moe Kyaw - Android Senior Developer</title>
+    <meta name="description" content="Android Senior Developer specializing in Kotlin, Jetpack Compose, and modern Android architecture">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js and Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <style>
+        :root {
+            --android-green: #3DDC84;
+            --electric-blue: #00D9FF;
+            --neon-purple: #B537F2;
+            --dark-bg: #0A0E27;
+            --darker-bg: #050818;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B8D4;
+            --gradient-1: linear-gradient(135deg, var(--android-green), var(--electric-blue));
+            --gradient-2: linear-gradient(135deg, var(--electric-blue), var(--neon-purple));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--darker-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--android-green);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.15s ease;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-follower {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(61, 220, 132, 0.3);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.3s ease;
+        }
+
+        /* Canvas Background */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 39, 0.7);
+            border-bottom: 1px solid rgba(61, 220, 132, 0.1);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            position: relative;
+            transition: color 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-1);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--android-green);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            max-width: 1200px;
+            padding: 0 5%;
+        }
+
+        .hero-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--android-green);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.3s;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.5s;
+        }
+
+        .hero-description {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.7s;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.9s;
+        }
+
+        .btn {
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: var(--dark-bg);
+            border: none;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-2);
+            transition: left 0.4s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 0;
+        }
+
+        .btn-primary span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--android-green);
+            border: 2px solid var(--android-green);
+        }
+
+        .btn-secondary:hover {
+            background: var(--android-green);
+            color: var(--dark-bg);
+            box-shadow: 0 0 30px rgba(61, 220, 132, 0.5);
+        }
+
+        /* Section Styling */
+        section {
+            min-height: 100vh;
+            padding: 8rem 5%;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            margin-bottom: 4rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::before {
+            content: attr(data-number);
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            color: var(--android-green);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: var(--gradient-1);
+            margin: 2rem auto 0;
+            border-radius: 2px;
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .about-text p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(61, 220, 132, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--android-green);
+            box-shadow: 0 10px 40px rgba(61, 220, 132, 0.2);
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .tech-badge {
+            background: var(--card-bg);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid rgba(61, 220, 132, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--android-green);
+            transition: all 0.3s ease;
+        }
+
+        .tech-badge:hover {
+            background: var(--android-green);
+            color: var(--dark-bg);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(61, 220, 132, 0.4);
+        }
+
+        /* Skills Section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .skill-category {
+            background: var(--card-bg);
+            padding: 3rem 2rem;
+            border-radius: 30px;
+            border: 1px solid rgba(61, 220, 132, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .skill-category:hover::before {
+            transform: scaleX(1);
+        }
+
+        .skill-category:hover {
+            transform: translateY(-10px);
+            border-color: var(--android-green);
+            box-shadow: 0 20px 60px rgba(61, 220, 132, 0.2);
+        }
+
+        .skill-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .skill-category h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--android-green);
+        }
+
+        .skill-list {
+            list-style: none;
+        }
+
+        .skill-list li {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+        }
+
+        .skill-list li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: var(--android-green);
+        }
+
+        /* Projects Section */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid rgba(61, 220, 132, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .project-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .project-card:hover {
+            transform: translateY(-15px);
+            border-color: var(--android-green);
+            box-shadow: 0 25px 70px rgba(61, 220, 132, 0.3);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, rgba(61, 220, 132, 0.2), rgba(0, 217, 255, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-image::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .project-content {
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .project-content h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--android-green);
+        }
+
+        .project-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.4rem 1rem;
+            background: rgba(61, 220, 132, 0.1);
+            border: 1px solid rgba(61, 220, 132, 0.3);
+            border-radius: 20px;
+            color: var(--android-green);
+        }
+
+        .project-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .project-link {
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--android-green);
+            color: var(--android-green);
+            text-decoration: none;
+            border-radius: 25px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .project-link:hover {
+            background: var(--android-green);
+            color: var(--dark-bg);
+            transform: translateY(-3px);
+        }
+
+        /* Contact Section */
+        .contact-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-text {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.8;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+        }
+
+        .social-link {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid rgba(61, 220, 132, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--android-green);
+            transition: all 0.4s ease;
+            text-decoration: none;
+        }
+
+        .social-link:hover {
+            background: var(--android-green);
+            color: var(--dark-bg);
+            transform: translateY(-10px) rotate(360deg);
+            box-shadow: 0 10px 30px rgba(61, 220, 132, 0.5);
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(61, 220, 132, 0.1);
+            background: var(--darker-bg);
+        }
+
+        footer p {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .about-stats {
+                grid-template-columns: 1fr;
+            }
+
+            section {
+                padding: 5rem 5%;
+            }
+        }
+
+        /* Loading Animation */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="loader-logo">MK</div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <!-- Canvas Background -->
+    <canvas id="canvas-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">MOE KYAW</div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-subtitle">&lt; Android Senior Developer /&gt;</div>
+            <h1 class="hero-title">MOE KYAW</h1>
+            <p class="hero-description">
+                Crafting exceptional Android experiences with Kotlin, Jetpack Compose, 
+                and modern architecture patterns. Transforming complex ideas into elegant, 
+                scalable mobile solutions.
+            </p>
+            <div class="cta-buttons">
+                <a href="#projects" class="btn btn-primary"><span>View My Work</span></a>
+                <a href="#contact" class="btn btn-secondary">Get In Touch</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <h2 class="section-title" data-number="01">About Me</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <p>
+                    I'm a passionate Android Senior Developer with extensive experience in 
+                    building high-performance mobile applications that serve millions of users. 
+                    My expertise spans the entire Android ecosystem, from designing clean 
+                    architectures to optimizing app performance.
+                </p>
+                <p>
+                    I specialize in modern Android development using Kotlin, Jetpack Compose, 
+                    and cutting-edge libraries. I'm deeply committed to writing clean, 
+                    maintainable code and following best practices like MVVM, Clean Architecture, 
+                    and SOLID principles.
+                </p>
+                <div class="tech-stack">
+                    <span class="tech-badge">Kotlin</span>
+                    <span class="tech-badge">Jetpack Compose</span>
+                    <span class="tech-badge">MVVM</span>
+                    <span class="tech-badge">Coroutines</span>
+                    <span class="tech-badge">Room</span>
+                    <span class="tech-badge">Retrofit</span>
+                    <span class="tech-badge">Dagger/Hilt</span>
+                    <span class="tech-badge">Clean Architecture</span>
+                </div>
+            </div>
+            <div class="about-stats">
+                <div class="stat-card">
+                    <div class="stat-number">8+</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Projects Delivered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5M+</div>
+                    <div class="stat-label">App Downloads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4.8★</div>
+                    <div class="stat-label">Avg. Rating</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills">
+        <h2 class="section-title" data-number="02">Technical Expertise</h2>
+        <div class="skills-grid">
+            <div class="skill-category">
+                <div class="skill-icon">🎨</div>
+                <h3>UI/UX Development</h3>
+                <ul class="skill-list">
+                    <li>Jetpack Compose</li>
+                    <li>Material Design 3</li>
+                    <li>Custom Views & Animations</li>
+                    <li>Adaptive Layouts</li>
+                    <li>Design Systems</li>
+                </ul>
+            </div>
+            <div class="skill-category">
+                <div class="skill-icon">🏗️</div>
+                <h3>Architecture & Patterns</h3>
+                <ul class="skill-list">
+                    <li>MVVM & MVI</li>
+                    <li>Clean Architecture</li>
+                    <li>Repository Pattern</li>
+                    <li>Dependency Injection</li>
+                    <li>Modular Architecture</li>
+                </ul>
+            </div>
+            <div class="skill-category">
+                <div class="skill-icon">⚡</div>
+                <h3>Performance & Testing</h3>
+                <ul class="skill-list">
+                    <li>Profiling & Optimization</li>
+                    <li>Memory Management</li>
+                    <li>Unit & UI Testing</li>
+                    <li>CI/CD Pipelines</li>
+                    <li>Code Quality Tools</li>
+                </ul>
+            </div>
+            <div class="skill-category">
+                <div class="skill-icon">🔧</div>
+                <h3>Tools & Libraries</h3>
+                <ul class="skill-list">
+                    <li>Kotlin Coroutines & Flow</li>
+                    <li>Retrofit & OkHttp</li>
+                    <li>Room & DataStore</li>
+                    <li>Hilt & Dagger</li>
+                    <li>Firebase Suite</li>
+                </ul>
+            </div>
+            <div class="skill-category">
+                <div class="skill-icon">🌐</div>
+                <h3>Backend Integration</h3>
+                <ul class="skill-list">
+                    <li>RESTful APIs</li>
+                    <li>GraphQL</li>
+                    <li>WebSockets</li>
+                    <li>OAuth & JWT</li>
+                    <li>API Security</li>
+                </ul>
+            </div>
+            <div class="skill-category">
+                <div class="skill-icon">📱</div>
+                <h3>Platform Features</h3>
+                <ul class="skill-list">
+                    <li>WorkManager</li>
+                    <li>Notifications</li>
+                    <li>Permissions Handling</li>
+                    <li>Location Services</li>
+                    <li>Camera & Media</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects">
+        <h2 class="section-title" data-number="03">Featured Projects</h2>
+        <div class="projects-grid">
+            <div class="project-card">
+                <div class="project-image">📱</div>
+                <div class="project-content">
+                    <h3>E-Commerce App</h3>
+                    <p>
+                        A feature-rich e-commerce platform with real-time inventory, 
+                        secure payments, and personalized recommendations serving 1M+ users.
+                    </p>
+                    <div class="project-tags">
+                        <span class="tag">Jetpack Compose</span>
+                        <span class="tag">MVVM</span>
+                        <span class="tag">Retrofit</span>
+                        <span class="tag">Room</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">View Demo</a>
+                        <a href="#" class="project-link">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">🎵</div>
+                <div class="project-content">
+                    <h3>Music Streaming App</h3>
+                    <p>
+                        Modern music player with offline playback, AI-powered playlists, 
+                        and social features. Built with Clean Architecture.
+                    </p>
+                    <div class="project-tags">
+                        <span class="tag">Kotlin</span>
+                        <span class="tag">Coroutines</span>
+                        <span class="tag">ExoPlayer</span>
+                        <span class="tag">Hilt</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">View Demo</a>
+                        <a href="#" class="project-link">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">💪</div>
+                <div class="project-content">
+                    <h3>Fitness Tracker</h3>
+                    <p>
+                        Comprehensive fitness app with workout tracking, nutrition planning, 
+                        and progress analytics. Integrated with wearable devices.
+                    </p>
+                    <div class="project-tags">
+                        <span class="tag">Compose</span>
+                        <span class="tag">Room</span>
+                        <span class="tag">WorkManager</span>
+                        <span class="tag">Health Connect</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">View Demo</a>
+                        <a href="#" class="project-link">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">💬</div>
+                <div class="project-content">
+                    <h3>Real-Time Chat App</h3>
+                    <p>
+                        Secure messaging platform with end-to-end encryption, 
+                        group chats, media sharing, and real-time notifications.
+                    </p>
+                    <div class="project-tags">
+                        <span class="tag">Kotlin</span>
+                        <span class="tag">Firebase</span>
+                        <span class="tag">WebSockets</span>
+                        <span class="tag">MVI</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">View Demo</a>
+                        <a href="#" class="project-link">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">🏦</div>
+                <div class="project-content">
+                    <h3>Banking App</h3>
+                    <p>
+                        Secure mobile banking solution with biometric authentication, 
+                        transaction history, and instant money transfers.
+                    </p>
+                    <div class="project-tags">
+                        <span class="tag">Security</span>
+                        <span class="tag">Biometric</span>
+                        <span class="tag">Encryption</span>
+                        <span class="tag">Clean Arch</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">View Demo</a>
+                        <a href="#" class="project-link">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">📰</div>
+                <div class="project-content">
+                    <h3>News Aggregator</h3>
+                    <p>
+                        Smart news app with personalized feeds, offline reading, 
+                        and multi-source aggregation. Clean and intuitive UI.
+                    </p>
+                    <div class="project-tags">
+                        <span class="tag">Paging 3</span>
+                        <span class="tag">DataStore</span>
+                        <span class="tag">API Integration</span>
+                        <span class="tag">Material 3</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">View Demo</a>
+                        <a href="#" class="project-link">GitHub</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2 class="section-title" data-number="04">Let's Connect</h2>
+        <div class="contact-content">
+            <p class="contact-text">
+                I'm always interested in hearing about new projects and opportunities. 
+                Whether you have a question or just want to say hi, feel free to reach out!
+            </p>
+            <a href="mailto:moekyaw@developer.com" class="btn btn-primary">
+                <span>Send Me an Email</span>
+            </a>
+            <div class="contact-links">
+                <a href="https://github.com/Moekyaw-developer" class="social-link" target="_blank" title="GitHub">
+                    <span>💻</span>
+                </a>
+                <a href="https://linkedin.com/in/moekyaw" class="social-link" target="_blank" title="LinkedIn">
+                    <span>💼</span>
+                </a>
+                <a href="https://twitter.com/moekyaw" class="social-link" target="_blank" title="Twitter">
+                    <span>🐦</span>
+                </a>
+                <a href="https://stackoverflow.com/users/moekyaw" class="social-link" target="_blank" title="Stack Overflow">
+                    <span>📚</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Moe Kyaw. Designed & Built with ❤️ using Three.js & GSAP</p>
+    </footer>
+
+    <script>
+        // Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 500);
+            }, 1500);
+        });
+
+        // Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            
+            setTimeout(() => {
+                cursorFollower.style.left = e.clientX - 10 + 'px';
+                cursorFollower.style.top = e.clientY - 10 + 'px';
+            }, 100);
+        });
+
+        // Three.js Background
+        const canvas = document.getElementById('canvas-bg');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.position.z = 5;
+
+        // Create particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 15;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.02,
+            color: 0x3DDC84,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Create lines
+        const lineGeometry = new THREE.BufferGeometry();
+        const lineMaterial = new THREE.LineBasicMaterial({ 
+            color: 0x00D9FF, 
+            transparent: true, 
+            opacity: 0.1 
+        });
+        
+        const linePositions = [];
+        for(let i = 0; i < 100; i++) {
+            linePositions.push(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10
+            );
+        }
+        lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+        const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+        scene.add(lines);
+
+        // Animation
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            particlesMesh.rotation.y += 0.0005;
+            particlesMesh.rotation.x += 0.0003;
+            
+            lines.rotation.y += 0.0002;
+            lines.rotation.x += 0.0001;
+            
+            camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.05;
+            camera.position.y += (mouseY * 0.5 - camera.position.y) * 0.05;
+            
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // GSAP Scroll Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate sections on scroll
+        gsap.utils.toArray('section').forEach(section => {
+            gsap.from(section.children, {
+                y: 100,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top 80%',
+                    end: 'top 20%',
+                    toggleActions: 'play none none reverse'
+                }
+            });
+        });
+
+        // Stat counter animation
+        const stats = document.querySelectorAll('.stat-number');
+        stats.forEach(stat => {
+            const target = stat.textContent;
+            const isNumber = !isNaN(parseFloat(target));
+            
+            if (isNumber) {
+                const endValue = parseFloat(target);
+                ScrollTrigger.create({
+                    trigger: stat,
+                    start: 'top 80%',
+                    onEnter: () => {
+                        let current = 0;
+                        const increment = endValue / 50;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= endValue) {
+                                stat.textContent = target;
+                                clearInterval(timer);
+                            } else {
+                                stat.textContent = Math.floor(current) + (target.includes('+') ? '+' : '');
+                            }
+                        }, 30);
+                    }
+                });
+            }
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.hero-content');
+            parallaxElements.forEach(el => {
+                el.style.transform = `translateY(${scrolled * 0.5}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
